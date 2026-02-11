@@ -28,8 +28,8 @@ export function RangeNav({ active, currency, metal }: Props) {
           className={cn(
             "rounded-full border px-4 py-1.5 text-sm transition",
             active === range.key
-              ? "border-ink bg-ink text-white"
-              : "border-black/20 bg-white/70 text-ink hover:border-ink/40"
+              ? "border-accent bg-accent text-bg font-medium"
+              : "border-border bg-panel-alt text-ink hover:border-ink/40"
           )}
         >
           {range.label}

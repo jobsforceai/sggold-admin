@@ -17,9 +17,9 @@ type Props = {
 
 export function RateTable({ rows, currency }: Props) {
   return (
-    <Card className="overflow-x-auto border border-black/5">
+    <Card className="overflow-x-auto border border-border">
       <table className="min-w-full text-left">
-        <thead className="bg-ink/5 text-xs uppercase tracking-wide text-ink/70">
+        <thead className="bg-white/5 text-xs uppercase tracking-wide text-ink/70">
           <tr>
             <th className="px-4 py-3">Name</th>
             <th className="px-4 py-3">1 Gram</th>
@@ -31,7 +31,7 @@ export function RateTable({ rows, currency }: Props) {
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.label} className="border-t border-black/5 text-sm text-ink/85">
+            <tr key={row.label} className="border-t border-border text-sm text-ink/80">
               <td className="px-4 py-3 font-medium">{row.label}</td>
               <td className="px-4 py-3">{formatCurrency(row.grams1, currency)}</td>
               <td className="px-4 py-3">{formatCurrency(row.grams10, currency)}</td>

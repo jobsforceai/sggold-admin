@@ -5,17 +5,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: "#f4efe5",
-        panel: "#fffdf8",
-        ink: "#161616",
-        accent: "#a67922",
-        silver: "#6b7280"
+        bg: "#0a0a0a",
+        panel: "#141414",
+        "panel-alt": "#1a1a1a",
+        ink: "#f5f5f5",
+        accent: "#d4a843",
+        "accent-dim": "#a67922",
+        silver: "#9ca3af",
+        border: "#2a2a2a"
       },
       backgroundImage: {
-        mesh: "radial-gradient(circle at 20% 20%, rgba(166,121,34,0.18), transparent 40%), radial-gradient(circle at 80% 0%, rgba(107,114,128,0.12), transparent 35%)"
+        mesh: "radial-gradient(circle at 20% 20%, rgba(212,168,67,0.08), transparent 40%), radial-gradient(circle at 80% 0%, rgba(156,163,175,0.05), transparent 35%)"
       },
       boxShadow: {
-        soft: "0 10px 35px rgba(22, 22, 22, 0.08)"
+        soft: "0 10px 35px rgba(0, 0, 0, 0.4)"
       }
     }
   },
