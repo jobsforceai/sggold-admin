@@ -229,3 +229,39 @@ export async function updateDeliveryStatus(
     { method: "PATCH", body: { status } }
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  Orders (Buy/Sell pending approval)                                 */
+/* ------------------------------------------------------------------ */
+
+export interface PendingOrder {
+  _id: string;
+  userId: { _id: string; name: string; phone: string } | string;
+  type: "buy" | "sell";
+  amountMg: number;
+  pricePerGramPaise: number;
+  totalPaise: number;
+  bonusMg: number;
+  status: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface PendingOrdersResponse {
+  orders: PendingOrder[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export async function getPendingOrders(page: number = 1): Promise<PendingOrdersResponse> {
+  return adminFetch<PendingOrdersResponse>(`/api/v1/admin/orders/pending?page=${page}`);
+}
+
+export async function approveOrder(orderId: string): Promise<unknown> {
+  return adminFetch(`/api/v1/admin/orders/${orderId}/approve`, { method: "PATCH" });
+}
+
+export async function rejectOrder(orderId: string): Promise<unknown> {
+  return adminFetch(`/api/v1/admin/orders/${orderId}/reject`, { method: "PATCH" });
+}

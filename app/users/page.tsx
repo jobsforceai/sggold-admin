@@ -5,13 +5,20 @@ import { SearchForm } from "../_components/search-form";
 
 export const dynamic = "force-dynamic";
 
+const filters = [
+  { key: "all", label: "All Users" },
+  { key: "jeweller-pending", label: "Jeweller Requests" },
+  { key: "jeweller-approved", label: "Approved Jewellers" },
+] as const;
+
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: { page?: string; search?: string };
+  searchParams: { page?: string; search?: string; filter?: string };
 }) {
   const page = Math.max(1, Number(searchParams.page) || 1);
   const search = searchParams.search?.trim() || undefined;
+  const filter = searchParams.filter || "all";
 
   let data;
   let error: string | null = null;
@@ -22,6 +29,15 @@ export default async function UsersPage({
     error = e instanceof Error ? e.message : "Failed to load users";
   }
 
+  // Client-side filter (ideally backend would support this, but works for now)
+  let filteredUsers = data?.users ?? [];
+  if (filter === "jeweller-pending") {
+    filteredUsers = filteredUsers.filter((u) => u.jewellerStatus === "pending");
+  } else if (filter === "jeweller-approved") {
+    filteredUsers = filteredUsers.filter((u) => u.jewellerStatus === "approved");
+  }
+
+  const pendingCount = (data?.users ?? []).filter((u) => u.jewellerStatus === "pending").length;
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
 
   return (
@@ -33,7 +49,30 @@ export default async function UsersPage({
         </p>
       </div>
 
-      <SearchForm placeholder="Search by name or phone..." defaultValue={search} />
+      {/* Filter tabs */}
+      <div className="flex items-center gap-4">
+        <div className="flex overflow-hidden rounded-xl border border-border bg-panel">
+          {filters.map((f) => (
+            <Link
+              key={f.key}
+              href={`/users?filter=${f.key}${search ? `&search=${search}` : ""}`}
+              className={`relative px-4 py-2 text-sm font-medium transition ${
+                filter === f.key ? "bg-accent text-bg" : "text-ink/50 hover:text-ink"
+              }`}
+            >
+              {f.label}
+              {f.key === "jeweller-pending" && pendingCount > 0 && (
+                <span className="ml-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                  {pendingCount}
+                </span>
+              )}
+            </Link>
+          ))}
+        </div>
+        <div className="flex-1">
+          <SearchForm placeholder="Search by name or phone..." defaultValue={search} />
+        </div>
+      </div>
 
       {error && (
         <div className="rounded-xl border border-red-700/50 bg-red-900/20 px-4 py-3 text-sm text-red-300">
@@ -50,13 +89,13 @@ export default async function UsersPage({
                   <th className="px-4 py-3 font-medium">Phone</th>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Account Type</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Jeweller Status</th>
                   <th className="px-4 py-3 font-medium">Created</th>
                   <th className="px-4 py-3 font-medium" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {data.users.map((user) => (
+                {filteredUsers.map((user) => (
                   <tr key={user._id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3 text-ink/80 font-mono text-xs">
                       {user.phone}
@@ -74,7 +113,7 @@ export default async function UsersPage({
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {user.accountType === "jeweller" && user.jewellerStatus ? (
+                      {user.jewellerStatus ? (
                         <StatusBadge status={user.jewellerStatus} />
                       ) : (
                         <span className="text-ink/40 text-xs">--</span>
@@ -88,15 +127,15 @@ export default async function UsersPage({
                         href={`/users/${user._id}`}
                         className="text-xs font-medium text-accent hover:underline"
                       >
-                        View
+                        {user.jewellerStatus === "pending" ? "Review" : "View"}
                       </Link>
                     </td>
                   </tr>
                 ))}
-                {data.users.length === 0 && (
+                {filteredUsers.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-ink/40">
-                      No users found
+                      {filter === "jeweller-pending" ? "No pending jeweller requests" : "No users found"}
                     </td>
                   </tr>
                 )}
@@ -104,12 +143,14 @@ export default async function UsersPage({
             </table>
           </div>
 
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            basePath="/users"
-            extraParams={search ? { search } : undefined}
-          />
+          {filter === "all" && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              basePath="/users"
+              extraParams={search ? { search } : undefined}
+            />
+          )}
         </>
       )}
     </div>
