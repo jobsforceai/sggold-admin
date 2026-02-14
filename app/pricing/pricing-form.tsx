@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { savePriceConfig, type PriceConfigData, type StateMarkup } from "@/actions/admin";
+import { savePriceConfig, fetchGoldPrice, fetchSilverPrice, type PriceConfigData, type StateMarkup, type FetchedPriceResult } from "@/actions/admin";
 
 type Props = { config: PriceConfigData };
 
@@ -21,6 +21,14 @@ export function PricingForm({ config }: Props) {
   const [silverPrice, setSilverPrice] = useState(
     config.silverPricePerGramPaise != null ? (config.silverPricePerGramPaise / 100).toString() : ""
   );
+
+  // Tax percentage for API fetched prices
+  const [goldTaxPercent, setGoldTaxPercent] = useState("3");
+  const [silverTaxPercent, setSilverTaxPercent] = useState("3");
+  const [isFetchingGold, setIsFetchingGold] = useState(false);
+  const [isFetchingSilver, setIsFetchingSilver] = useState(false);
+  const [goldPriceBreakdown, setGoldPriceBreakdown] = useState<FetchedPriceResult | null>(null);
+  const [silverPriceBreakdown, setSilverPriceBreakdown] = useState<FetchedPriceResult | null>(null);
 
   // Platform spread
   const [buyPremium, setBuyPremium] = useState(config.buyPremiumPercent.toString());
@@ -41,6 +49,62 @@ export function PricingForm({ config }: Props) {
     setStateMarkups((prev) =>
       prev.map((s, i) => (i === idx ? { ...s, markupPercent: parseFloat(value) || 0 } : s))
     );
+  }
+
+  async function handleFetchGoldPrice() {
+    setIsFetchingGold(true);
+    setGoldPriceBreakdown(null);
+    
+    try {
+      const tax = parseFloat(goldTaxPercent) || 0;
+      const result = await fetchGoldPrice(tax);
+      
+      setGoldPriceBreakdown(result);
+      setGoldPrice(result.finalPrice.toString());
+      
+      // Automatically enable manual mode if not already enabled
+      if (!goldManual) {
+        setGoldManual(true);
+      }
+      
+      setMessage({ 
+        type: "success", 
+        text: `Gold price fetched successfully: Base ₹${result.basePrice} + Tax ₹${result.taxAmount} (${result.taxPercent}%) = ₹${result.finalPrice}/gram` 
+      });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Failed to fetch gold price';
+      setMessage({ type: "error", text: errorMsg });
+    } finally {
+      setIsFetchingGold(false);
+    }
+  }
+
+  async function handleFetchSilverPrice() {
+    setIsFetchingSilver(true);
+    setSilverPriceBreakdown(null);
+    
+    try {
+      const tax = parseFloat(silverTaxPercent) || 0;
+      const result = await fetchSilverPrice(tax);
+      
+      setSilverPriceBreakdown(result);
+      setSilverPrice(result.finalPrice.toString());
+      
+      // Automatically enable manual mode if not already enabled
+      if (!silverManual) {
+        setSilverManual(true);
+      }
+      
+      setMessage({ 
+        type: "success", 
+        text: `Silver price fetched successfully: Base ₹${result.basePrice} + Tax ₹${result.taxAmount} (${result.taxPercent}%) = ₹${result.finalPrice}/gram` 
+      });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Failed to fetch silver price';
+      setMessage({ type: "error", text: errorMsg });
+    } finally {
+      setIsFetchingSilver(false);
+    }
   }
 
   function handleSave() {
@@ -83,38 +147,136 @@ export function PricingForm({ config }: Props) {
 
       {/* Gold Price */}
       <Section title="Gold Price">
-        <div className="flex items-center gap-4">
-          <Toggle checked={goldManual} onChange={setGoldManual} label={goldManual ? "Manual Price" : "Live Feed"} />
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Toggle checked={goldManual} onChange={setGoldManual} label={goldManual ? "Manual Price" : "Live Feed"} />
+            {goldManual && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-ink/50">INR per gram:</span>
+                <NumInput value={goldPrice} onChange={setGoldPrice} placeholder="e.g. 8500" />
+              </div>
+            )}
+          </div>
+          
           {goldManual && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-ink/50">INR per gram:</span>
-              <NumInput value={goldPrice} onChange={setGoldPrice} placeholder="e.g. 8500" />
+            <div className="rounded-lg border border-border bg-bg/50 p-4 space-y-3">
+              <div>
+                <h3 className="text-sm font-medium text-ink/80">Fetch from GoldAPI</h3>
+                <p className="text-xs text-ink/40 mt-0.5">Get latest 24k gold price with tax applied</p>
+              </div>
+              
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-ink/60 mb-1.5">Tax %</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={goldTaxPercent}
+                    onChange={(e) => setGoldTaxPercent(e.target.value)}
+                    placeholder="3"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+                  />
+                </div>
+                
+                <button
+                  onClick={handleFetchGoldPrice}
+                  disabled={isFetchingGold}
+                  className="rounded-lg bg-accent/10 border border-accent/30 px-4 py-2 text-sm font-medium text-accent transition-all hover:bg-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isFetchingGold ? "Fetching..." : "Fetch Latest Price"}
+                </button>
+              </div>
+              
+              {goldPriceBreakdown && (
+                <div className="rounded-md bg-emerald-900/10 border border-emerald-700/30 px-3 py-2 text-xs">
+                  <p className="text-emerald-300 font-medium">Price Breakdown:</p>
+                  <p className="text-ink/70 mt-1">
+                    Base Price: <span className="text-ink font-medium">₹{goldPriceBreakdown.basePrice}</span>
+                  </p>
+                  <p className="text-ink/70">
+                    Tax ({goldPriceBreakdown.taxPercent}%): <span className="text-ink font-medium">₹{goldPriceBreakdown.taxAmount}</span>
+                  </p>
+                  <p className="text-accent font-semibold mt-1 pt-1 border-t border-emerald-700/30">
+                    Final Price: ₹{goldPriceBreakdown.finalPrice}/gram
+                  </p>
+                </div>
+              )}
             </div>
           )}
+          
+          {!goldManual && (
+            <p className="text-xs text-ink/40">
+              Gold price is fetched from live market feed with Indian market markup applied
+            </p>
+          )}
         </div>
-        {!goldManual && (
-          <p className="mt-2 text-xs text-ink/40">
-            Gold price is fetched from live market feed with Indian market markup applied
-          </p>
-        )}
       </Section>
 
       {/* Silver Price */}
       <Section title="Silver Price">
-        <div className="flex items-center gap-4">
-          <Toggle checked={silverManual} onChange={setSilverManual} label={silverManual ? "Manual Price" : "Live Feed"} />
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Toggle checked={silverManual} onChange={setSilverManual} label={silverManual ? "Manual Price" : "Live Feed"} />
+            {silverManual && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-ink/50">INR per gram:</span>
+                <NumInput value={silverPrice} onChange={setSilverPrice} placeholder="e.g. 105" />
+              </div>
+            )}
+          </div>
+          
           {silverManual && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-ink/50">INR per gram:</span>
-              <NumInput value={silverPrice} onChange={setSilverPrice} placeholder="e.g. 105" />
+            <div className="rounded-lg border border-border bg-bg/50 p-4 space-y-3">
+              <div>
+                <h3 className="text-sm font-medium text-ink/80">Fetch from GoldAPI</h3>
+                <p className="text-xs text-ink/40 mt-0.5">Get latest silver price with tax applied</p>
+              </div>
+              
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-ink/60 mb-1.5">Tax %</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={silverTaxPercent}
+                    onChange={(e) => setSilverTaxPercent(e.target.value)}
+                    placeholder="3"
+                    className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+                  />
+                </div>
+                
+                <button
+                  onClick={handleFetchSilverPrice}
+                  disabled={isFetchingSilver}
+                  className="rounded-lg bg-accent/10 border border-accent/30 px-4 py-2 text-sm font-medium text-accent transition-all hover:bg-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isFetchingSilver ? "Fetching..." : "Fetch Latest Price"}
+                </button>
+              </div>
+              
+              {silverPriceBreakdown && (
+                <div className="rounded-md bg-emerald-900/10 border border-emerald-700/30 px-3 py-2 text-xs">
+                  <p className="text-emerald-300 font-medium">Price Breakdown:</p>
+                  <p className="text-ink/70 mt-1">
+                    Base Price: <span className="text-ink font-medium">₹{silverPriceBreakdown.basePrice}</span>
+                  </p>
+                  <p className="text-ink/70">
+                    Tax ({silverPriceBreakdown.taxPercent}%): <span className="text-ink font-medium">₹{silverPriceBreakdown.taxAmount}</span>
+                  </p>
+                  <p className="text-accent font-semibold mt-1 pt-1 border-t border-emerald-700/30">
+                    Final Price: ₹{silverPriceBreakdown.finalPrice}/gram
+                  </p>
+                </div>
+              )}
             </div>
           )}
+          
+          {!silverManual && (
+            <p className="text-xs text-ink/40">
+              Silver price is fetched from live market feed with Indian market markup applied
+            </p>
+          )}
         </div>
-        {!silverManual && (
-          <p className="mt-2 text-xs text-ink/40">
-            Silver price is fetched from live market feed with Indian market markup applied
-          </p>
-        )}
       </Section>
 
       {/* Platform Spread */}

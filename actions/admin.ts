@@ -312,3 +312,98 @@ export async function approveOrder(orderId: string): Promise<unknown> {
 export async function rejectOrder(orderId: string): Promise<unknown> {
   return adminFetch(`/api/v1/admin/orders/${orderId}/reject`, { method: "PATCH" });
 }
+
+/* ------------------------------------------------------------------ */
+/*  GoldAPI Price Fetching                                             */
+/* ------------------------------------------------------------------ */
+
+export interface GoldAPIResponse {
+  timestamp: number;
+  metal: string;
+  currency: string;
+  exchange: string;
+  symbol: string;
+  prev_close_price: number;
+  open_price: number;
+  low_price: number;
+  high_price: number;
+  open_time: number;
+  price: number;
+  ch: number;
+  chp: number;
+  ask: number;
+  bid: number;
+  price_gram_24k: number;
+  price_gram_22k: number;
+  price_gram_21k: number;
+  price_gram_20k: number;
+  price_gram_18k: number;
+  price_gram_16k: number;
+  price_gram_14k: number;
+  price_gram_10k: number;
+}
+
+export interface FetchedPriceResult {
+  basePrice: number;
+  taxPercent: number;
+  taxAmount: number;
+  finalPrice: number;
+  metal: string;
+}
+
+const GOLDAPI_KEY = process.env.GOLDAPI_KEY ?? "goldapi-ipcsmlmhbtev-io";
+
+type MetalType = 'XAU' | 'XAG';
+
+async function fetchMetalPrice(
+  metalType: MetalType,
+  taxPercent: number = 3
+): Promise<FetchedPriceResult> {
+  const metalNames: Record<MetalType, string> = {
+    XAU: 'Gold (24k)',
+    XAG: 'Silver',
+  };
+
+  try {
+    const url = `https://www.goldapi.io/api/${metalType}/INR`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'x-access-token': GOLDAPI_KEY },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`GoldAPI request failed: ${response.statusText}`);
+    }
+
+    const data = await response.json() as GoldAPIResponse;
+    const basePrice = data.price_gram_24k;
+
+    if (!basePrice || typeof basePrice !== 'number') {
+      throw new Error('Invalid price data received from GoldAPI');
+    }
+
+    const taxAmount = basePrice * (taxPercent / 100);
+    const finalPrice = basePrice + taxAmount;
+
+    return {
+      basePrice: parseFloat(basePrice.toFixed(2)),
+      taxPercent,
+      taxAmount: parseFloat(taxAmount.toFixed(2)),
+      finalPrice: parseFloat(finalPrice.toFixed(2)),
+      metal: metalNames[metalType],
+    };
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch ${metalNames[metalType]} price: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+export async function fetchGoldPrice(taxPercent: number = 3): Promise<FetchedPriceResult> {
+  return fetchMetalPrice('XAU', taxPercent);
+}
+
+export async function fetchSilverPrice(taxPercent: number = 3): Promise<FetchedPriceResult> {
+  return fetchMetalPrice('XAG', taxPercent);
+}
