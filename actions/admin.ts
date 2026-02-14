@@ -11,17 +11,31 @@ async function adminFetch<T>(
   path: string,
   options?: { method?: string; body?: unknown }
 ): Promise<T> {
+  const url = `${API_BASE}${path}`;
+
+  if (!API_BASE || API_BASE === "http://localhost:4000") {
+    throw new Error(
+      "BACKEND_API_BASE_URL is not set. Configure it in your environment variables."
+    );
+  }
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     "x-admin-key": ADMIN_KEY,
   };
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    method: options?.method ?? "GET",
-    headers,
-    body: options?.body ? JSON.stringify(options.body) : undefined,
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: options?.method ?? "GET",
+      headers,
+      body: options?.body ? JSON.stringify(options.body) : undefined,
+      cache: "no-store",
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    throw new Error(`Cannot reach backend at ${API_BASE}: ${msg}`);
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
