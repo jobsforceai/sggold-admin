@@ -32,6 +32,53 @@ async function adminFetch<T>(
 }
 
 /* ------------------------------------------------------------------ */
+/*  Cache Management                                                   */
+/* ------------------------------------------------------------------ */
+
+export async function clearCache(): Promise<{ message: string }> {
+  return adminFetch<{ message: string }>("/api/v1/admin/clear-cache", {
+    method: "POST",
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Price Config                                                       */
+/* ------------------------------------------------------------------ */
+
+export interface StateMarkup {
+  stateCode: string;
+  stateName: string;
+  markupPercent: number;
+}
+
+export interface PriceConfigData {
+  _id: string;
+  goldPricePerGramPaise: number | null;
+  silverPricePerGramPaise: number | null;
+  buyPremiumPercent: number;
+  sellDiscountPercent: number;
+  gstPercent: number;
+  importDutyPercent: number;
+  aidcPercent: number;
+  localPremiumPercent: number;
+  stateMarkups: StateMarkup[];
+  updatedAt: string;
+}
+
+export async function fetchPriceConfig(): Promise<PriceConfigData> {
+  return adminFetch<PriceConfigData>("/api/v1/admin/price-config");
+}
+
+export async function savePriceConfig(
+  data: Partial<Omit<PriceConfigData, "_id" | "updatedAt">>
+): Promise<PriceConfigData> {
+  return adminFetch<PriceConfigData>("/api/v1/admin/price-config", {
+    method: "PUT",
+    body: data,
+  });
+}
+
+/* ------------------------------------------------------------------ */
 /*  Dashboard                                                          */
 /* ------------------------------------------------------------------ */
 

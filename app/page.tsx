@@ -1,4 +1,5 @@
 import { getStats } from "@/actions/admin";
+import { ClearCacheButton } from "./clear-cache-button";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,12 @@ export default async function DashboardPage() {
           {error}
         </div>
       )}
+
+      {/* Quick Actions */}
+      <div className="rounded-2xl border border-border bg-panel p-5 space-y-3">
+        <h2 className="text-sm font-medium text-ink/50">Quick Actions</h2>
+        <ClearCacheButton />
+      </div>
 
       {stats && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
