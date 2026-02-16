@@ -148,16 +148,10 @@ export function PricingForm({ config }: Props) {
       {/* Gold Price */}
       <Section title="Gold Price">
         <div className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Toggle checked={goldManual} onChange={setGoldManual} label={goldManual ? "Manual Price" : "Live Feed"} />
-            {goldManual && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-ink/50">INR per gram:</span>
-                <NumInput value={goldPrice} onChange={setGoldPrice} placeholder="e.g. 8500" />
-              </div>
-            )}
           </div>
-          
+
           {goldManual && (
             <div className="rounded-lg border border-border bg-bg/50 p-4 space-y-3">
               <div>
@@ -215,16 +209,10 @@ export function PricingForm({ config }: Props) {
       {/* Silver Price */}
       <Section title="Silver Price">
         <div className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Toggle checked={silverManual} onChange={setSilverManual} label={silverManual ? "Manual Price" : "Live Feed"} />
-            {silverManual && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-ink/50">INR per gram:</span>
-                <NumInput value={silverPrice} onChange={setSilverPrice} placeholder="e.g. 105" />
-              </div>
-            )}
           </div>
-          
+
           {silverManual && (
             <div className="rounded-lg border border-border bg-bg/50 p-4 space-y-3">
               <div>
@@ -315,8 +303,8 @@ export function PricingForm({ config }: Props) {
 
       {/* State Markups */}
       <Section title="State-wise Markup %">
-        <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full min-w-[400px] text-sm">
             <thead>
               <tr className="border-b border-border bg-panel-alt">
                 <th className="px-4 py-2.5 text-left font-medium text-ink/60">State</th>

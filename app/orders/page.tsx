@@ -17,9 +17,9 @@ export default async function OrdersPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Pending Orders</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Pending Orders</h1>
         <p className="mt-1 text-sm text-ink/50">
           Buy and sell orders waiting for approval
         </p>
@@ -33,7 +33,7 @@ export default async function OrdersPage() {
 
       {data && (
         <div className="overflow-x-auto rounded-2xl border border-border">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[700px] text-sm">
             <thead>
               <tr className="bg-white/5 text-left text-ink/60">
                 <th className="px-4 py-3 font-medium">Type</th>

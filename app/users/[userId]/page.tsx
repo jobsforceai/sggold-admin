@@ -34,7 +34,7 @@ export default async function UserDetailPage({
 
   if (error) {
     return (
-      <div className="p-6 md:p-8 space-y-6">
+      <div className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
         <Link
           href="/users"
           className="text-sm text-accent hover:underline"
@@ -53,7 +53,7 @@ export default async function UserDetailPage({
   const { user, wallet, transactions, schemes } = data;
 
   return (
-    <div className="p-6 md:p-8 space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
       <Link
         href="/users"
         className="inline-block text-sm text-accent hover:underline"
@@ -63,9 +63,9 @@ export default async function UserDetailPage({
 
       {/* User Info */}
       <div className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-panel p-5 space-y-4">
+        <div className="rounded-2xl border border-border bg-panel p-4 sm:p-5 space-y-4">
           <h2 className="text-lg font-semibold">User Information</h2>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <dl className="grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
             <Dt>Name</Dt>
             <Dd>{user.name}</Dd>
             <Dt>Phone</Dt>
@@ -92,10 +92,10 @@ export default async function UserDetailPage({
         </div>
 
         {/* Wallet */}
-        <div className="rounded-2xl border border-border bg-panel p-5 space-y-4">
+        <div className="rounded-2xl border border-border bg-panel p-4 sm:p-5 space-y-4">
           <h2 className="text-lg font-semibold">Wallet</h2>
           {wallet ? (
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <dl className="grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
               <Dt>Balance</Dt>
               <Dd className="text-accent font-semibold">
                 {mgToGrams(wallet.balanceMg)} g
@@ -138,7 +138,7 @@ export default async function UserDetailPage({
         </h2>
         {transactions.length > 0 ? (
           <div className="overflow-x-auto rounded-2xl border border-border">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[500px] text-sm">
               <thead>
                 <tr className="bg-white/5 text-left text-ink/60">
                   <th className="px-4 py-3 font-medium">Type</th>
@@ -181,7 +181,7 @@ export default async function UserDetailPage({
         <h2 className="text-lg font-semibold">Schemes ({schemes.length})</h2>
         {schemes.length > 0 ? (
           <div className="overflow-x-auto rounded-2xl border border-border">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[500px] text-sm">
               <thead>
                 <tr className="bg-white/5 text-left text-ink/60">
                   <th className="px-4 py-3 font-medium">Slab</th>

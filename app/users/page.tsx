@@ -41,22 +41,22 @@ export default async function UsersPage({
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Users</h1>
         <p className="mt-1 text-sm text-ink/50">
           All registered users on the platform
         </p>
       </div>
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-4">
-        <div className="flex overflow-hidden rounded-xl border border-border bg-panel">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex overflow-x-auto rounded-xl border border-border bg-panel">
           {filters.map((f) => (
             <Link
               key={f.key}
               href={`/users?filter=${f.key}${search ? `&search=${search}` : ""}`}
-              className={`relative px-4 py-2 text-sm font-medium transition ${
+              className={`relative whitespace-nowrap px-3 py-2 text-sm font-medium transition sm:px-4 ${
                 filter === f.key ? "bg-accent text-bg" : "text-ink/50 hover:text-ink"
               }`}
             >
@@ -69,7 +69,7 @@ export default async function UsersPage({
             </Link>
           ))}
         </div>
-        <div className="flex-1">
+        <div className="w-full sm:flex-1">
           <SearchForm placeholder="Search by name or phone..." defaultValue={search} />
         </div>
       </div>
@@ -83,7 +83,7 @@ export default async function UsersPage({
       {data && (
         <>
           <div className="overflow-x-auto rounded-2xl border border-border">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="bg-white/5 text-left text-ink/60">
                   <th className="px-4 py-3 font-medium">Phone</th>

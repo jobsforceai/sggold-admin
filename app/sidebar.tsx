@@ -14,20 +14,41 @@ const NAV_ITEMS = [
   { href: "/deliveries", label: "Deliveries", icon: PackageIcon },
 ] as const;
 
-export function Sidebar() {
+type SidebarProps = {
+  open?: boolean;
+  onClose?: () => void;
+};
+
+export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-border bg-panel">
+    <aside
+      className={cn(
+        "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-panel transition-transform duration-200 ease-in-out",
+        "md:translate-x-0 md:z-40",
+        open ? "translate-x-0" : "-translate-x-full"
+      )}
+    >
       {/* Brand */}
       <div className="flex h-16 items-center gap-3 border-b border-border px-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
           <span className="text-sm font-bold text-bg">SG</span>
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-base font-semibold text-ink">SG Gold</h1>
           <p className="text-[11px] leading-none text-ink/40">Admin Panel</p>
         </div>
+        {/* Close button — mobile only */}
+        <button
+          onClick={onClose}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink/40 transition hover:bg-white/5 hover:text-ink md:hidden"
+          aria-label="Close menu"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Navigation */}
@@ -39,6 +60,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onClose}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive

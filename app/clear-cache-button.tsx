@@ -20,7 +20,7 @@ export function ClearCacheButton() {
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
       <button
         onClick={handleClear}
         disabled={isPending}

@@ -20,10 +20,10 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Dashboard</h1>
         <p className="mt-1 text-sm text-ink/50">
           Platform overview and key metrics
         </p>
